@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: "J-Jones Public Core"
+message: "If you use this project, please cite the repository."
+type: software
+authors:
+  - name: "FranklySolutions LLC"
+version: 0.1.0-alpha.1
+date-released: 2026-11-17
+license: Apache-2.0
+repository-code: https://github.com/jamalfrnk/J-Jones-public-core

@@ -1,0 +1,918 @@
+schema_version: 1
+register_kind: public_core_mechanism_register
+register_status: owner_approved_for_planning
+last_reviewed: 2026-11-16
+owner_approval: approved_as_classified
+owner_approval_date: 2026-11-16
+
+# This file is an engineering release-boundary inventory. It is not a patent
+# application, claim chart, legal opinion, or substitute for counsel. It must
+# not contain patent claims, private canonical content, raw evidence,
+# credentials, tokens, or private provider responses.
+
+classification_policy:
+  evidence_basis: observed_from_current_repository
+  legal_review_status: not_a_legal_opinion
+  default_public_treatment: review_required
+  default_unclassified_treatment: exclude_until_review
+  public_core_principles:
+    - local_first
+    - model_agnostic
+    - canonical_knowledge_remains_governed
+    - derived_state_is_rebuildable
+    - external_disclosure_is_explicit_and_minimal
+    - public_interfaces_do_not_grant_canonical_write_authority
+  public_core_scope:
+    - generic_replaceable_infrastructure
+    - local_only_functionality
+    - provider_neutral_interfaces
+    - deterministic_local_retrieval
+    - rebuildable_derived_indexes
+    - screened_public_export_interfaces
+    - generic_storage_and_integrity_interfaces
+
+decision_values:
+  - include_candidate
+  - generic_interface
+  - review_required
+  - exclude_from_public_core
+  - deferred
+
+mechanisms:
+  - id: PCM-001
+    name: generic_note_front_matter_interface
+    description: >
+      Parse, render, and validate structured note metadata without publishing
+      J-Jones-specific authority, claim, sensitivity, or canonical taxonomy.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/memory/notes.py
+    symbols:
+      - NoteTypeRule
+      - parse_front_matter
+      - render_note
+      - validate_note_metadata
+      - validate_note_text
+      - validate_note_file
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals:
+        - BASELINE_REQUIRED_FIELDS
+        - NOTE_TYPE_RULES
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - J-Jones-specific note taxonomy
+      - claim authority rules
+      - private sensitivity policy
+      - canonical admission policy
+    security_effect: Generic validation must fail closed on malformed metadata.
+    privacy_effect: The parser must not read or disclose private content beyond its explicit input.
+    canonical_knowledge_effect: Parsing and validation must not create or mutate canonical knowledge.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-002
+    name: generic_untrusted_content_fencing
+    description: >
+      Represent untrusted content and fence it from privileged instructions in
+      provider prompts without publishing private J-Jones prompt wording.
+    category: public_candidate
+    priority: P1
+    confidence: high
+    module_paths:
+      - src/jjones/providers/prompt.py
+    symbols:
+      - minimum_prompt_token_bound
+      - UntrustedContent
+      - build_prompt
+      - build_image_prompt
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - private prompt templates
+      - private guardrail wording
+      - private classification policy
+      - provider-specific disclosure rules
+    security_effect: Retrieved or ingested content remains data rather than privileged instruction.
+    privacy_effect: The interface must not log or persist full private prompts or responses.
+    canonical_knowledge_effect: Prompt construction cannot authorize canonical mutation.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-003
+    name: provider_neutral_model_port
+    description: >
+      Define provider-neutral request, response, image, and transport-checkpoint
+      contracts without shipping provider adapters or provider-routing policy.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/providers/base.py
+    symbols:
+      - ProviderImage
+      - ProviderRequest
+      - ProviderResponse
+      - ModelProvider
+      - AskTransportCheckpoint
+      - ModelProvider.generate
+      - AskTransportCheckpoint.before_transport
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - provider factory
+      - provider allowlists
+      - credentials
+      - disclosure ledger
+      - commercial provider configuration
+    security_effect: The interface must not bypass authentication, classification, or disclosure policy.
+    privacy_effect: Requests must not expose private content without an external policy boundary.
+    canonical_knowledge_effect: Provider responses are noncanonical outputs.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-004
+    name: generic_local_evidence_capture_interface
+    description: >
+      Capture bounded local files, bytes, or text through an injectable evidence
+      service while keeping J-Jones-specific quarantine and admission policy private.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/evidence/capture.py
+    symbols:
+      - EvidenceRepositoryProtocol
+      - CaptureActivityStoreProtocol
+      - CaptureService
+      - CaptureService.capture_file
+      - CaptureService.capture_bytes
+      - CaptureService.capture_text
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state:
+        - CaptureService
+      durable_state:
+        - evidence/raw
+        - evidence/manifests
+        - evidence/hashes
+      derived_state: []
+    excluded_private_behavior:
+      - J-Jones secret classification
+      - quarantine policy
+      - evidence-to-claim admission
+      - private audit semantics
+    security_effect: Capture must be bounded, atomic, and resistant to unsafe source paths.
+    privacy_effect: Secret and private metadata handling must remain explicit and local.
+    canonical_knowledge_effect: Captured evidence is not canonical knowledge.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-005
+    name: generic_evidence_hashing
+    description: Hash bytes or files for content identity without publishing J-Jones-specific lineage semantics.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/evidence/hashing.py
+    symbols:
+      - hash_bytes
+      - hash_file
+    public_core_treatment: include_candidate
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: false
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state:
+        - content hashes
+    excluded_private_behavior:
+      - evidence-to-claim lineage
+      - proposal digest semantics
+      - private audit bindings
+    security_effect: Hash comparisons must be deterministic and use bounded inputs.
+    privacy_effect: Hashes must not be treated as a license to disclose source content.
+    canonical_knowledge_effect: A hash identifies content; it does not establish truth.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-006
+    name: generic_evidence_manifest_verification
+    description: Create, read, list, and verify generic evidence manifests and hash records.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/evidence/manifest.py
+      - src/jjones/evidence/verify.py
+    symbols:
+      - manifest_path
+      - hash_file_path
+      - write_manifest
+      - write_hash_file
+      - read_manifest
+      - list_manifests
+      - IntegrityReport
+      - IntegrityReport.is_clean
+      - IntegrityReport.summary
+      - verify_all
+    symbol_modules:
+      src/jjones/evidence/manifest.py:
+        - manifest_path
+        - hash_file_path
+        - write_manifest
+        - write_hash_file
+        - read_manifest
+        - list_manifests
+      src/jjones/evidence/verify.py:
+        - IntegrityReport
+        - IntegrityReport.is_clean
+        - IntegrityReport.summary
+        - verify_all
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state:
+        - evidence/manifests
+        - evidence/hashes
+      derived_state: []
+    excluded_private_behavior:
+      - private source classification
+      - canonical admission consequences
+      - private evidence reconciliation policy
+    security_effect: Verification must report mismatches rather than silently repair authoritative content.
+    privacy_effect: Manifests must not include raw private evidence content unnecessarily.
+    canonical_knowledge_effect: Manifest validity does not make evidence canonical.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-007
+    name: generic_journaled_atomic_write
+    description: Provide a generic journal-before-write and atomic persistence boundary.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/evidence/journal.py
+      - src/jjones/evidence/capture.py
+    symbols:
+      - JournalEntry
+      - journal_path
+      - write_entry
+      - clear_entry
+      - read_entry
+      - list_entries
+      - unreadable_entries
+      - CaptureService._journal
+      - CaptureService._clear_journal
+      - CaptureService._atomic_copy_bytes
+    symbol_modules:
+      src/jjones/evidence/journal.py:
+        - JournalEntry
+        - journal_path
+        - write_entry
+        - clear_entry
+        - read_entry
+        - list_entries
+        - unreadable_entries
+      src/jjones/evidence/capture.py:
+        - CaptureService._journal
+        - CaptureService._clear_journal
+        - CaptureService._atomic_copy_bytes
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state:
+        - evidence journal
+      derived_state: []
+    excluded_private_behavior:
+      - J-Jones recovery semantics
+      - private provenance consequences
+      - canonical state reconciliation
+    security_effect: Interrupted writes remain observable and recoverable rather than silently complete.
+    privacy_effect: Journal metadata must be bounded and avoid raw content.
+    canonical_knowledge_effect: Incomplete capture cannot be treated as canonical evidence.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-008
+    name: generic_sqlite_transaction_interface
+    description: >
+      Provide generic SQLite engine, session-factory, migration, snapshot, and
+      transaction helpers without shipping private J-Jones tables or migrations.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/persistence/db.py
+    symbols:
+      - create_sqlite_engine
+      - create_session_factory
+      - init_schema
+      - run_migrations
+      - migration_head_revision
+      - snapshot_sqlite_database
+      - session_scope
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state:
+        - public Core database
+      derived_state: []
+    excluded_private_behavior:
+      - J-Jones ORM schema
+      - private migration history
+      - proposal and disclosure tables
+      - authority and licensing tables
+    security_effect: Foreign keys, rollback, and transaction boundaries must remain enabled and fail closed.
+    privacy_effect: Public database configuration must not point at private runtime data.
+    canonical_knowledge_effect: Database transactions do not themselves authorize canonical mutation.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-009
+    name: deterministic_local_fts_retrieval
+    description: >
+      Provide deterministic local lexical retrieval over a rebuildable FTS index
+      without exposing J-Jones-specific authority or disclosure policy.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/retrieval/search.py
+    symbols:
+      - SourceRef
+      - SearchResult
+      - SearchResult.to_dict
+      - rebuild_index
+      - SyncReport
+      - SyncReport.to_dict
+      - sync_index
+      - search
+      - has_indexed_knowledge
+      - results_for_note_ids
+    public_core_treatment: include_candidate
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: false
+    state_locations:
+      module_globals:
+        - _FTS_TABLE
+      instance_state: []
+      durable_state:
+        - public Core SQLite index
+      derived_state:
+        - FTS5 rows
+        - index state metadata
+    excluded_private_behavior:
+      - private supersession ordering
+      - private sensitivity filtering
+      - private evidence resolution
+      - private knowledge-region semantics
+    security_effect: Search results must be bounded and must not grant write authority.
+    privacy_effect: Search must remain local unless a separate disclosure policy is explicitly added.
+    canonical_knowledge_effect: Search results are derived views, not canonical truth.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-010
+    name: rebuildable_derived_retrieval_state
+    description: Define index synchronization and rebuild behavior so derived search state can be recreated from source data.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/retrieval/search.py
+    symbols:
+      - rebuild_index
+      - sync_index
+      - _derived_state_ready
+      - _reindex_candidates
+      - _reset_state_tables
+      - _upsert_state
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state:
+        - FTS5 rows
+        - index state metadata
+    excluded_private_behavior:
+      - private canonical ordering
+      - private source suppression
+      - private disclosure filtering
+    security_effect: Index corruption must not mutate source or canonical files.
+    privacy_effect: Rebuild must stay within the approved public data roots.
+    canonical_knowledge_effect: The source remains authoritative; the index is disposable.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-011
+    name: strict_clone_local_only_answering
+    description: >
+      Answer from local evidence without an external provider or commercial AI
+      entitlement, while preserving redaction and the distinction between a
+      retrieval result and canonical truth.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/pipeline/strict_clone.py
+    symbols:
+      - StrictCloneAnswer
+      - answer_from_local_evidence
+    public_core_treatment: include_candidate
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: false
+    state_locations:
+      module_globals:
+        - _DISPLAYABLE_SENSITIVITIES
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - General AI dispatch
+      - Full AI proposal behavior
+      - private mode authority
+      - provider disclosure
+    security_effect: The path must not invoke an external provider or grant canonical write authority.
+    privacy_effect: Restricted snippets must remain redacted and local.
+    canonical_knowledge_effect: The answer is derived from local evidence and does not mutate canonical state.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-012
+    name: generic_authenticated_streaming_backup
+    description: >
+      Expose a generic authenticated streaming-backup interface without
+      publishing J-Jones workspace scope, key resolution, or restore semantics.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/backup/crypto.py
+    symbols:
+      - BackupFormatError
+      - BackupIntegrityError
+      - ArtifactHeader
+      - ArtifactHeader.to_bytes
+      - ArtifactHeader.from_bytes
+      - generate_key
+      - key_id
+      - EncryptingWriter
+      - EncryptingWriter.write
+      - EncryptingWriter.close
+      - read_header
+      - DecryptingReader
+      - DecryptingReader.read
+      - build_header
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state:
+        - EncryptingWriter
+        - DecryptingReader
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - J-Jones backup directory scope
+      - keyring and environment precedence
+      - canonical restore behavior
+      - evidence path rebinding
+    security_effect: Cryptographic format and integrity behavior require separate security review before release.
+    privacy_effect: Encryption does not authorize disclosure or provide key-management policy.
+    canonical_knowledge_effect: Backup content is a copy of state, not a new authority source.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-013
+    name: screened_public_note_projection
+    description: >
+      Project explicitly public notes into a bounded public format after secret,
+      local-path, private-network, metadata, and archive-size screening.
+    category: public_candidate
+    priority: P1
+    confidence: high
+    module_paths:
+      - src/jjones/pipeline/okf_export_content.py
+    symbols:
+      - screen_text
+      - _public_web_locator
+      - public_note
+      - prepare_documents
+      - archive_documents
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals:
+        - MAX_NOTES
+        - MAX_INPUT_BYTES
+        - MAX_ARCHIVE_BYTES
+        - _CANONICAL_FIELDS
+      instance_state: []
+      durable_state: []
+      derived_state:
+        - public projection
+        - mapping report
+    excluded_private_behavior:
+      - private canonical fields
+      - private source locators
+      - private sensitivity policy
+      - private export receipts
+    security_effect: Public export must reject secrets, local locators, credentials, and private network references.
+    privacy_effect: Only explicitly public notes may cross the export boundary.
+    canonical_knowledge_effect: Projection reads canonical notes but does not mutate them.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-014
+    name: bounded_public_export_file_access
+    description: >
+      Read bounded ordinary files under approved roots and publish to a safe
+      destination without link, reparse-point, hard-link, or path traversal escape.
+    category: public_candidate
+    priority: P1
+    confidence: high
+    module_paths:
+      - src/jjones/pipeline/okf_export_files.py
+    symbols:
+      - StagingCleanupError
+      - identity
+      - no_links
+      - read_source
+      - read_local_file
+      - destination
+      - publish
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - J-Jones workspace roots
+      - private staging policy
+      - private publication receipts
+    security_effect: File identity and path containment must be checked before, during, and after reads.
+    privacy_effect: The public adapter must not read private roots by default.
+    canonical_knowledge_effect: File publication is a read/projection operation, not canonical mutation.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-015
+    name: human_confirmed_public_export_interface
+    description: >
+      Expose a one-use preview, revalidation, confirmation, and publication
+      interface for deliberately public content without publishing private receipt storage.
+    category: public_candidate
+    priority: P1
+    confidence: high
+    module_paths:
+      - src/jjones/pipeline/okf_export.py
+    symbols:
+      - ExportPreview
+      - ExportResult
+      - OkfExportService
+      - OkfExportService.preview
+      - OkfExportService.revoke
+      - OkfExportService.publish
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state:
+        - OkfExportService._plan
+        - OkfExportService._publishing
+      durable_state: []
+      derived_state:
+        - preview bundle
+        - source hashes
+    excluded_private_behavior:
+      - private receipt schema
+      - private actor semantics
+      - private release policy
+      - private destination policy
+    security_effect: Preview expiry, exact-byte revalidation, typed confirmation, and one-use publication must remain enforced.
+    privacy_effect: Export must be opt-in and explicitly limited to public content.
+    canonical_knowledge_effect: Export only projects existing content and cannot approve canonical changes.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-016
+    name: thin_public_format_cli_adapters
+    description: Provide thin command-line adapters for a public export/import format without private runtime composition.
+    category: public_candidate
+    priority: P2
+    confidence: medium
+    module_paths:
+      - src/jjones/cli/okf_export.py
+      - src/jjones/cli/okf_import.py
+      - src/jjones/cli/okf_bundle_import.py
+    symbols:
+      - terminal_text
+      - export_okf
+      - import_okf
+      - import_okf_bundle
+    symbol_modules:
+      src/jjones/cli/okf_export.py:
+        - terminal_text
+        - export_okf
+      src/jjones/cli/okf_import.py:
+        - import_okf
+      src/jjones/cli/okf_bundle_import.py:
+        - import_okf_bundle
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - private composition root
+      - private authorization
+      - private provider configuration
+      - private database paths
+    security_effect: CLI commands must remain thin and must not bypass service-layer checks.
+    privacy_effect: Errors and paths must be sanitized before display.
+    canonical_knowledge_effect: Import must create evidence or drafts, not direct canonical writes.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-017
+    name: generic_audio_media_detection
+    description: Recognize audio inputs and media types without publishing J-Jones sensitivity or provider policy.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - src/jjones/pipeline/audio.py
+    symbols:
+      - audio_suffixes
+      - is_audio
+      - media_type_for
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - default_capture_sensitivity
+      - provider disclosure
+      - transcription policy
+      - multimodal extraction
+    security_effect: Media detection must not grant capture or provider authority.
+    privacy_effect: Media classification must remain separate from disclosure authorization.
+    canonical_knowledge_effect: Media detection does not create canonical knowledge.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-018
+    name: public_typed_settings_interface
+    description: >
+      Define public typed configuration for a standalone Core without exposing
+      private provider, approval, licensing, or secret-source semantics.
+    category: public_candidate
+    priority: P2
+    confidence: medium
+    module_paths:
+      - src/jjones/config/settings.py
+    symbols:
+      - ApiSettings
+      - DatabaseSettings
+      - IngestionSettings
+      - SearchSettings
+      - ModelSettings
+      - Settings
+      - Settings.secret_sources
+      - Settings.api_is_loopback_only
+      - Settings.enforce_secure_defaults
+      - Settings.safe_summary
+      - _redact_database_url
+    public_core_treatment: generic_interface
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: true
+    state_locations:
+      module_globals:
+        - _LOOPBACK_HOSTS
+        - _ENV_MAP
+      instance_state:
+        - Settings
+      durable_state: []
+      derived_state: []
+    excluded_private_behavior:
+      - private provider configuration names
+      - private approval thresholds
+      - entitlement semantics
+      - private secret-source precedence
+    security_effect: Secure defaults and redacted summaries must remain fail-closed.
+    privacy_effect: Configuration output must not expose secrets or private database URLs.
+    canonical_knowledge_effect: Settings do not authorize canonical mutation.
+    evidence_status: observed_from_current_repository
+
+  - id: PCM-019
+    name: public_core_documentation_boundary
+    description: >
+      Publish documentation for the public Core only, clearly separating local
+      retrieval, derived indexes, public interfaces, and private J-Jones behavior.
+    category: public_candidate
+    priority: P2
+    confidence: high
+    module_paths:
+      - docs/ip/PUBLIC_CORE_MECHANISM_REGISTER.yaml
+    symbols: []
+    public_core_treatment: include_candidate
+    owner_decision: approved_as_classified
+    public_interface_allowed: true
+    private_implementation_required: false
+    state_locations:
+      module_globals: []
+      instance_state: []
+      durable_state:
+        - public documentation
+      derived_state: []
+    excluded_private_behavior:
+      - private policy YAML
+      - private prompts
+      - private provider routing
+      - private proposal and disclosure implementation
+    security_effect: Documentation must not publish exploitable private trust-boundary details.
+    privacy_effect: Documentation must not include private data or examples.
+    canonical_knowledge_effect: Documentation must distinguish source, derived, proposed, and canonical state.
+    evidence_status: implemented_unvalidated
+
+review_required:
+  - id: PR-001
+    name: public_private_persistence_boundary
+    source_paths:
+      - src/jjones/persistence/orm.py
+      - src/jjones/persistence/db.py
+      - migrations/env.py
+      - migrations/versions
+    treatment: review_required
+    reason: The public schema and private governance schema require a separate table, migration, and dependency-closure decision.
+
+  - id: PR-002
+    name: repository_import_pipeline
+    source_paths:
+      - src/jjones/pipeline/repo_import.py
+    treatment: review_required
+    reason: Repository imports may contain source code, secrets, canonical files, evidence, or provider configuration.
+
+  - id: PR-003
+    name: api_surface
+    source_paths:
+      - src/jjones/api
+    treatment: review_required
+    reason: Endpoint-by-endpoint review is required to separate local read-only APIs from private authority and provider APIs.
+
+  - id: PR-004
+    name: cli_surface
+    source_paths:
+      - src/jjones/cli
+    treatment: review_required
+    reason: The public CLI must be independently bounded rather than copied from the private composition root.
+
+  - id: PR-005
+    name: architecture_and_security_documentation
+    source_paths:
+      - ARCHITECTURE.md
+      - THREAT_MODEL.md
+      - TEST_STRATEGY.md
+      - AUTONOMY_POLICY.md
+      - VISION.md
+    treatment: review_required
+    reason: Existing documents may mix public principles with private policy, security, and governance detail.
+
+  - id: PR-006
+    name: tests_and_fixtures
+    source_paths:
+      - tests
+    treatment: review_required
+    reason: Tests can reveal private state transitions, policy thresholds, prompts, provider behavior, and private fixtures.
+
+  - id: PR-007
+    name: packaging_and_build_configuration
+    source_paths:
+      - pyproject.toml
+      - uv.lock
+      - packaging
+      - .github
+    treatment: review_required
+    reason: Public packaging must not expose private release, signing, deployment, provider, or commercial configuration.
+
+excluded_from_public_core:
+  - canonical_mutation_and_approval_implementation
+  - model_derived_epistemic_and_claim_admission_policy
+  - provider_disclosure_and_context_compilation_policy
+  - authentication_fallback_and_mode_authority_implementation
+  - private_evidence_to_canonical_lineage
+  - private_governance_orm_schema_and_migrations
+  - vector_and_embedding_retrieval_implementation
+  - private_backup_key_resolution_and_restore
+  - private_import_consent_and_chat_history_pipeline
+  - J-Jones_MCP_and_ACP_behavior
+  - Claude_Code_session_ingestion
+  - video_frame_processing_and_multimodal_provider_path
+  - private_policy_yaml
+  - private_prompt_templates
+  - private_application_composition_root
+  - private_release_and_deployment_configuration
+
+next_artifacts:
+  - path: docs/ip/PUBLIC_CORE_CLAIM_MODULE_MAP.md
+    purpose: Map each public mechanism to exact modules, symbols, tests, and private exclusions.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_SEAM_PLAN.md
+    purpose: Define public protocols, adapters, dependency direction, and private implementation seams.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_SCHEMA_SPLIT.md
+    purpose: Separate public Core tables, private tables, migrations, foreign keys, and derived indexes.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_BOUNDARY_PROPOSAL.md
+    purpose: Propose the public/private directory, package, database, provider, and documentation boundary.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_LOOPBACK_THREAT_MODEL.md
+    purpose: Evaluate public Core local-server and loopback behavior without copying private authentication semantics.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_TOKENLESS_DECISION.md
+    purpose: Record the owner-approved decision for any tokenless loopback behavior before implementation changes.
+    status: owner_decision_required
+
+  - path: docs/ip/PUBLIC_CORE_TEST_AND_FIXTURE_MAP.md
+    purpose: Separate public contract tests from private governance, disclosure, security, and canonical-mutation tests.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_PACKAGING_BOUNDARY.md
+    purpose: Separate public package metadata and build configuration from private release, signing, deployment, and commercial configuration.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_DOCUMENTATION_MAP.md
+    purpose: Identify documentation that may be published, sanitized, rewritten, or kept private.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_BOUNDARY_AUDIT.md
+    purpose: Record the final artifact-only dependency, privacy, security, and owner-decision audit.
+    status: implemented_unvalidated
+
+  - path: docs/ip/PUBLIC_CORE_COMPLETION_AUDIT.md
+    purpose: Verify every planning requirement, artifact, boundary, and remaining owner decision.
+    status: implemented_unvalidated
+
+validation:
+  source_split_started: false
+  runtime_behavior_validated: false
+  hosted_behavior_validated: false
+  patent_scope_assessed: false
+  public_release_approved: false
+  register_status: owner_approved_for_planning
