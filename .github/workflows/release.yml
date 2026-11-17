@@ -1,0 +1,152 @@
+name: Public Core Signed Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and publish
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: Build release artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install locked environment
+        run: uv sync --locked --extra dev
+
+      - name: Build package
+        run: uv build
+
+      - name: Generate CycloneDX SBOM
+        run: uv run --extra dev pip-audit --format cyclonedx-json --output dist/jjones-public-core-sbom.cdx.json
+
+      - name: Generate SHA-256 manifest
+        shell: bash
+        run: sha256sum dist/* > dist/SHA256SUMS
+
+      - name: Upload unsigned release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-core-release-unsigned
+          path: dist
+          if-no-files-found: error
+
+  sign:
+    name: Sign checksum manifest
+    needs: build
+    runs-on: windows-2025
+    environment: public-release-signing
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download unsigned release bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: public-core-release-unsigned
+          path: dist
+
+      - name: Authenticate to Azure with GitHub OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign SHA-256 manifest with Artifact Signing
+        uses: jamalfrnk/artifact-signing-action@c41ab607157e82e3ed79e291b56f9e7425818b04 # main
+        with:
+          endpoint: ${{ vars.ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.ARTIFACT_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}
+          files: ${{ github.workspace }}\dist\SHA256SUMS
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          generate-pkcs7: true
+          pkcs7-options: DetachedSignedData
+          description: J-Jones Public Core release checksum manifest
+          description-url: https://github.com/jamalfrnk/J-Jones-public-core
+          correlation-id: ${{ github.repository }}-${{ github.run_id }}
+          exclude-environment-credential: true
+          exclude-workload-identity-credential: true
+          exclude-managed-identity-credential: true
+          exclude-shared-token-cache-credential: true
+          exclude-visual-studio-credential: true
+          exclude-visual-studio-code-credential: true
+          exclude-azure-cli-credential: false
+          exclude-azure-powershell-credential: true
+          exclude-azure-developer-cli-credential: true
+          exclude-interactive-browser-credential: true
+
+      - name: Verify signed manifest exists
+        shell: pwsh
+        run: |
+          $manifest = Join-Path $env:GITHUB_WORKSPACE "dist\SHA256SUMS"
+          $signature = Join-Path $env:GITHUB_WORKSPACE "dist\SHA256SUMS.p7"
+          if (-not (Test-Path -LiteralPath $manifest)) {
+            throw "The checksum manifest was not present after signing."
+          }
+          if (-not (Test-Path -LiteralPath $signature)) {
+            throw "Artifact Signing did not produce SHA256SUMS.p7."
+          }
+
+      - name: Upload signed release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-core-release-signed
+          path: dist
+          if-no-files-found: error
+
+  publish:
+    name: Publish signed release
+    needs: sign
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download signed release bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: public-core-release-signed
+          path: dist
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --title "J-Jones Public Core $RELEASE_TAG" \
+              --generate-notes
+          fi

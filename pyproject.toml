@@ -21,6 +21,9 @@ dev = [
   "ruff>=0.7,<1.0",
   "pip-audit>=2.7,<3.0",
   "detect-secrets>=1.5,<2.0",
+  "mypy>=1.13,<2.0",
+  "bandit>=1.7,<2.0",
+  "types-PyYAML>=6.0,<7.0",
 ]
 
 [build-system]
@@ -44,4 +47,4 @@ select = ["E", "F", "I", "UP", "B", "SIM", "S"]
 ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S105", "S106", "S108"]
+"tests/**/*.py" = ["S101", "S104", "S105", "S106", "S108", "S310"]

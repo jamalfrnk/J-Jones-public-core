@@ -25,6 +25,10 @@ jobs:
         run: uv run --extra dev ruff format --check .
       - name: Lint
         run: uv run --extra dev ruff check .
+      - name: Type check
+        run: uv run --extra dev mypy src
+      - name: Security lint
+        run: uv run --extra dev bandit -c pyproject.toml -r src
       - name: Tests
         run: uv run --extra dev pytest --cov=jjones_core --cov-report=term-missing
       - name: Build package
@@ -32,4 +36,4 @@ jobs:
       - name: Dependency audit
         run: uv run --extra dev pip-audit
       - name: Secret scan
-        run: uv run --extra dev detect-secrets scan --all-files --exclude-files "(^|/)(\\.venv|\\.pytest_cache|\\.ruff_cache|dist)(/|$)"
+        run: uv run --extra dev detect-secrets scan --all-files --exclude-files "(^|/)(\\.venv|\\.pytest_cache|\\.ruff_cache|\\.mypy_cache|dist)(/|$)"
