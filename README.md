@@ -48,6 +48,8 @@ The public Core currently provides:
   candidate.
 - Public tests, package metadata, lockfile, CI, dependency audit, and secret
   scanning.
+- A protected, tag-driven release workflow that signs the release checksum
+  manifest with the owner-controlled Artifact Signing service.
 
 ## What is deliberately not implemented
 
@@ -512,9 +514,35 @@ The public GitHub repository must show:
 - A clean secret scan.
 - A published source tag.
 - Checksums and SBOM for release artifacts.
+- A completed protected signing job and detached signature for the checksum
+  manifest when the signed-release workflow is used.
 - An Apache-2.0 license.
 - Accurate release notes.
 - No private files or private history.
+
+### Signed release provenance
+
+The release workflow in `.github/workflows/release.yml` builds the wheel,
+source archive, and CycloneDX SBOM on Ubuntu, creates `SHA256SUMS`, and then
+uses the owner-controlled
+[`jamalfrnk/artifact-signing-action`](https://github.com/jamalfrnk/artifact-signing-action)
+on a Windows 2025 runner. The action produces a detached `SHA256SUMS.p7`
+signature for the checksum manifest. The manifest covers the release files, so
+the signed manifest binds the wheel, source archive, and SBOM together.
+
+The signing job is protected by the `public-release-signing` GitHub environment,
+uses GitHub OpenID Connect for Azure authentication, and requires the Azure
+Artifact Signing Certificate Profile Signer role. The workflow does not put
+long-lived signing credentials in the repository.
+
+The current published release is not retroactively represented as signed by
+this new workflow. A future signed release must retain the exact tag, commit
+SHA, signing-job URL, `SHA256SUMS`, `SHA256SUMS.p7`, SBOM, and publication
+timestamp. Consumers should verify the detached signature with a trusted
+certificate-chain toolchain and then verify the SHA-256 values in the manifest.
+
+The setup and verification boundary is documented in
+`docs/PUBLIC_CORE_RELEASE_SIGNING.md`.
 
 ### Limits of the evidence
 
@@ -558,6 +586,7 @@ Read:
 - docs/ip/PUBLIC_CORE_LOOPBACK_THREAT_MODEL.md
 - docs/ip/PUBLIC_CORE_TOKENLESS_DECISION.md
 - docs/ip/PUBLIC_CORE_TEST_AND_FIXTURE_MAP.md
+- docs/PUBLIC_CORE_RELEASE_SIGNING.md
 
 Never place secrets, user content, provider responses, or confidential
 patent/business information in issues, pull requests, fixtures, prompts, or
